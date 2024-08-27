@@ -22,7 +22,10 @@
       </a-menu>
     </a-col>
     <a-col flex="100px">
-      <div>
+      <div v-if="loginUserStore.loginUser.id">
+        {{ loginUserStore.loginUser.userName ?? "无名" }}
+      </div>
+      <div v-else>
         <a-button type="primary" href="/user/login">登录</a-button>
       </div>
     </a-col>
@@ -33,6 +36,10 @@
 import { routes } from "@/router/routes";
 import { useRouter } from "vue-router";
 import { ref } from "vue";
+import { useLoginUserStore } from "@/store/userStore";
+import checkAccess from "@/access/checkAccess";
+
+const loginUserStore = useLoginUserStore();
 
 const router = useRouter();
 // 当前选中的菜单项
@@ -45,6 +52,10 @@ router.afterEach((to, from, failure) => {
 // 展示在菜单栏的路由数组
 const visibleRoutes = routes.filter((item) => {
   if (item.meta?.hideInMenu) {
+    return false;
+  }
+  // 根据全栈过滤菜单
+  if (!checkAccess(loginUserStore.loginUser, item.meta?.access as string)) {
     return false;
   }
   return true;
